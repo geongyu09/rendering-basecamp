@@ -8,7 +8,7 @@
 - 사용자 인터랙션은 동작하지 않아도 된다.
 - `/public` 의 html, css 리소스를 기반으로 구현한다.
 - express 로 서버를 만들고, TMDB 데이터를 동적으로 받아 HTML 을 동적으로 생성한다.
-- Railway 등으로 배포해서 `/detail/:id` 의 og tag 동작과 `/` 의 FCP 개선을 확인한다.
+- Render 등으로 배포해서 `/detail/:id` 의 og tag 동작과 `/` 의 FCP 개선을 확인한다.
 
 ## 목차
 
@@ -291,12 +291,12 @@ escapeHtml 유틸 적용
 
 **배경**
 
-og:url 은 절대 URL 이어야 한다. 로컬(`http://localhost:8080`)과 배포 도메인이 다르다. Railway 는 프록시 뒤에서 앱을 실행하므로 앱이 직접 받는 요청은 http 다.
+og:url 은 절대 URL 이어야 한다. 로컬(`http://localhost:8080`)과 배포 도메인이 다르다. Render 는 프록시 뒤에서 앱을 실행하므로 앱이 직접 받는 요청은 http 다.
 
 **선택지**
 
 - **요청 호스트에서 계산**: `req.protocol + req.get('host')` 로 만들고 `app.set('trust proxy', true)` 로 프록시의 `X-Forwarded-Proto` 를 신뢰한다. 환경변수 추가가 없다.
-- **BASE_URL 환경변수**: 배포 도메인을 환경변수로 등록해서 쓴다. Railway Variables 에 하나 더 등록해야 한다.
+- **BASE_URL 환경변수**: 배포 도메인을 환경변수로 등록해서 쓴다. Render 환경변수에 하나 더 등록해야 한다.
 - **og:url 생략**: og:url 없이 type/title/description/image 만 넣는다.
 
 **결정**
@@ -305,7 +305,7 @@ og:url 은 절대 URL 이어야 한다. 로컬(`http://localhost:8080`)과 배�
 
 **근거**
 
-> - BASE_URL 같은 환경변수를 Railway Variables 에 따로 등록·관리하지 않아도 된다.
+> - BASE_URL 같은 환경변수를 Render 환경변수에 따로 등록·관리하지 않아도 된다.
 > - 로컬·배포·도메인 변경 시에도 코드나 설정을 바꾸지 않고 요청에 맞는 URL 이 만들어진다.
 > - `trust proxy` 로 `X-Forwarded-Proto` 를 읽어서 프록시 뒤에서도 https URL 이 나온다.
 > - og:url 이 있어야 공유할 때 페이지의 정규 URL 을 지정할 수 있어서 생략하지 않는다.
@@ -320,12 +320,12 @@ og:url 은 절대 URL 이어야 한다. 로컬(`http://localhost:8080`)과 배�
 
 **배경**
 
-현재 `server.ts` 는 8080 이 하드코딩되어 있다. Railway 는 `PORT` 환경변수를 주입한다.
+현재 `server.ts` 는 8080 이 하드코딩되어 있다. Render 는 `PORT` 환경변수를 주입한다.
 
 **선택지**
 
-- **`process.env.PORT ?? 8080`**: Railway 가 주입하는 PORT 를 우선 쓰고, 로컬에서는 8080 을 쓴다.
-- **8080 유지**: 코드는 그대로 두고 Railway 에서 Generate Domain 할 때 target port 를 8080 으로 지정한다.
+- **`process.env.PORT ?? 8080`**: Render 가 주입하는 PORT 를 우선 쓰고, 로컬에서는 8080 을 쓴다.
+- **8080 유지**: 코드는 그대로 두고 Render 환경변수에 `PORT=8080` 을 직접 지정한다.
 
 **결정**
 
@@ -333,7 +333,7 @@ og:url 은 절대 URL 이어야 한다. 로컬(`http://localhost:8080`)과 배�
 
 **근거**
 
-> `PORT` 환경변수는 Railway 뿐 아니라 Render·Heroku 등 다른 PaaS 에서도 쓰는 관례라, 배포 플랫폼을 바꿔도 코드 수정 없이 동작한다.
+> `PORT` 환경변수는 Render 뿐 아니라 Railway·Heroku 등 다른 PaaS 에서도 쓰는 관례라, 배포 플랫폼을 바꿔도 코드 수정 없이 동작한다.
 
 **트레이드오프 / 영향**
 
